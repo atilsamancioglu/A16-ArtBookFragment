@@ -36,7 +36,6 @@ import java.io.IOException;
 
 import static android.content.Context.MODE_PRIVATE;
 
-
 public class DetailsFragment extends Fragment {
 
     EditText artNameText, artistNameText, artYearText;
@@ -48,9 +47,6 @@ public class DetailsFragment extends Fragment {
     public DetailsFragment() {
         // Required empty public constructor
     }
-
-
-
 
     @Override
     public void onCreate(Bundle savedInstanceState) {

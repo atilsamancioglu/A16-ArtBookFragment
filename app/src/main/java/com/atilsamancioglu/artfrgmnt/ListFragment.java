@@ -8,6 +8,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,10 +23,9 @@ import java.util.ArrayList;
 import static android.content.Context.MODE_PRIVATE;
 
 public class ListFragment extends Fragment {
-    ListView listView;
     ArrayList<String> nameArray;
     ArrayList<Integer> idArray;
-    ArrayAdapter arrayAdapter;
+    ListAdapter listAdapter;
 
     public ListFragment() {
         // Required empty public constructor
@@ -50,30 +51,15 @@ public class ListFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        listView = view.findViewById(R.id.listView);
+        RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
         nameArray = new ArrayList<String>();
         idArray = new ArrayList<Integer>();
 
-
-        arrayAdapter = new ArrayAdapter(getContext(),android.R.layout.simple_list_item_1,nameArray);
-        listView.setAdapter(arrayAdapter);
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                ListFragmentDirections.ActionListFragmentToDetailsFragment action = ListFragmentDirections.actionListFragmentToDetailsFragment("old");
-                action.setArtId(idArray.get(position));
-                action.setInfo("old");
-                Navigation.findNavController(view).navigate(action);
-
-            }
-        });
-
-
+        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
+        listAdapter = new ListAdapter(nameArray,idArray);
+        recyclerView.setAdapter(listAdapter);
         getData();
-
-
-
 
     }
 
@@ -89,10 +75,10 @@ public class ListFragment extends Fragment {
             while (cursor.moveToNext()) {
                 nameArray.add(cursor.getString(nameIx));
                 idArray.add(cursor.getInt(idIx));
-
             }
 
-            arrayAdapter.notifyDataSetChanged();
+
+            listAdapter.notifyDataSetChanged();
 
             cursor.close();
         } catch (Exception e) {
