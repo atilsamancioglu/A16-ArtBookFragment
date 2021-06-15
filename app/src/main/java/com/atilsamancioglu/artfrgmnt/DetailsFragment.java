@@ -15,6 +15,10 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultCallback;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
@@ -30,6 +34,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -43,6 +48,9 @@ public class DetailsFragment extends Fragment {
     Bitmap selectedImage;
     ImageView imageView;
     String info = "";
+    ActivityResultLauncher<Intent> activityResultLauncher;
+    ActivityResultLauncher<String> permissionLauncher;
+
 
     public DetailsFragment() {
         // Required empty public constructor
@@ -51,6 +59,7 @@ public class DetailsFragment extends Fragment {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        registerLauncher();
         if (getArguments() != null) {
         }
     }
@@ -73,7 +82,7 @@ public class DetailsFragment extends Fragment {
         artYearText = view.findViewById(R.id.yearText);
 
 
-        database = getActivity().openOrCreateDatabase("Arts", MODE_PRIVATE,null);
+        database = requireActivity().openOrCreateDatabase("Arts", MODE_PRIVATE,null);
 
 
         if(getArguments() != null) {
@@ -81,8 +90,6 @@ public class DetailsFragment extends Fragment {
         } else {
             info = "new";
         }
-
-        System.out.println(info);
 
 
         button.setOnClickListener(new View.OnClickListener() {
@@ -148,11 +155,15 @@ public class DetailsFragment extends Fragment {
     }
 
     public void selectImage(View view){
-        if (ContextCompat.checkSelfPermission(getContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-            ActivityCompat.requestPermissions(getActivity(),new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},1);
+        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            //ActivityCompat.requestPermissions(getActivity(),new String[] {Manifest.permission.READ_EXTERNAL_STORAGE},1);
+            permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+
         } else {
             Intent intentToGallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            startActivityForResult(intentToGallery,2);
+            //startActivityForResult(intentToGallery,2);
+            activityResultLauncher.launch(intentToGallery);
+
         }
 
     }
@@ -171,7 +182,7 @@ public class DetailsFragment extends Fragment {
 
         try {
 
-            database = getActivity().openOrCreateDatabase("Arts",MODE_PRIVATE,null);
+            database = requireActivity().openOrCreateDatabase("Arts",MODE_PRIVATE,null);
             database.execSQL("CREATE TABLE IF NOT EXISTS arts (id INTEGER PRIMARY KEY,artname VARCHAR, paintername VARCHAR, year VARCHAR, image BLOB)");
 
 
@@ -197,7 +208,7 @@ public class DetailsFragment extends Fragment {
 
     }
 
-
+/*
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 
@@ -243,6 +254,64 @@ public class DetailsFragment extends Fragment {
 
 
         super.onActivityResult(requestCode, resultCode, data);
+    }
+
+
+ */
+    public void registerLauncher() {
+        activityResultLauncher = registerForActivityResult(
+                new ActivityResultContracts.StartActivityForResult(),
+                new ActivityResultCallback<ActivityResult>() {
+                    @Override
+                    public void onActivityResult(ActivityResult result) {
+                        if (result.getResultCode() == Activity.RESULT_OK) {
+                            Intent intentFromResult = result.getData();
+                            if (intentFromResult != null) {
+                                Uri imageData = intentFromResult.getData();
+                                try {
+
+                                    if (Build.VERSION.SDK_INT >= 28) {
+                                        ImageDecoder.Source source = ImageDecoder.createSource(requireActivity().getContentResolver(),imageData);
+                                        selectedImage = ImageDecoder.decodeBitmap(source);
+                                        imageView.setImageBitmap(selectedImage);
+
+                                    } else {
+                                        selectedImage = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(),imageData);
+                                        imageView.setImageBitmap(selectedImage);
+                                    }
+
+                                } catch (IOException e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+                        }
+                    }
+                });
+
+
+
+
+
+        permissionLauncher =
+                registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
+                    @Override
+                    public void onActivityResult(Boolean result) {
+                        if(result) {
+                            //permission granted
+                            Intent intentToGallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                            //startActivityForResult(intentToGallery,2);
+                            activityResultLauncher.launch(intentToGallery);
+
+                        } else {
+                            //permission denied
+                            Toast.makeText(requireActivity(),"Permisson needed!",Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                });
+
+
     }
 
     public Bitmap makeSmallerImage(Bitmap image, int maximumSize) {

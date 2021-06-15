@@ -66,7 +66,7 @@ public class ListFragment extends Fragment {
     public void getData() {
 
         try {
-            SQLiteDatabase database = getActivity().openOrCreateDatabase("Arts",MODE_PRIVATE,null);
+            SQLiteDatabase database = requireActivity().openOrCreateDatabase("Arts",MODE_PRIVATE,null);
 
             Cursor cursor = database.rawQuery("SELECT * FROM arts", null);
             int nameIx = cursor.getColumnIndex("artname");
