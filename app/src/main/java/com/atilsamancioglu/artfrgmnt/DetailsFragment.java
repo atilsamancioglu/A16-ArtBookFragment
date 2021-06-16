@@ -36,6 +36,8 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.atilsamancioglu.artfrgmnt.databinding.FragmentDetailsBinding;
+
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
@@ -43,13 +45,12 @@ import static android.content.Context.MODE_PRIVATE;
 
 public class DetailsFragment extends Fragment {
 
-    EditText artNameText, artistNameText, artYearText;
     SQLiteDatabase database;
     Bitmap selectedImage;
-    ImageView imageView;
     String info = "";
     ActivityResultLauncher<Intent> activityResultLauncher;
     ActivityResultLauncher<String> permissionLauncher;
+    private FragmentDetailsBinding binding;
 
 
     public DetailsFragment() {
@@ -68,18 +69,14 @@ public class DetailsFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_details, container, false);
+        binding = FragmentDetailsBinding.inflate(inflater, container, false);
+        View view = binding.getRoot();
+        return view;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        Button button = view.findViewById(R.id.button);
-        imageView = view.findViewById(R.id.imageView);
-        artNameText = view.findViewById(R.id.artNameText);
-        artistNameText = view.findViewById(R.id.painterNameText);
-        artYearText = view.findViewById(R.id.yearText);
 
 
         database = requireActivity().openOrCreateDatabase("Arts", MODE_PRIVATE,null);
@@ -92,14 +89,14 @@ public class DetailsFragment extends Fragment {
         }
 
 
-        button.setOnClickListener(new View.OnClickListener() {
+        binding.button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 save(view);
             }
         });
 
-        imageView.setOnClickListener(new View.OnClickListener() {
+        binding.imageView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 selectImage(view);
@@ -108,17 +105,17 @@ public class DetailsFragment extends Fragment {
 
 
         if (info.matches("new")) {
-            artNameText.setText("");
-            artistNameText.setText("");
-            artYearText.setText("");
-            button.setVisibility(View.VISIBLE);
+            binding.artNameText.setText("");
+            binding.painterNameText.setText("");
+            binding.yearText.setText("");
+            binding.button.setVisibility(View.VISIBLE);
 
             Bitmap selectImage = BitmapFactory.decodeResource(getContext().getResources(),R.drawable.selectimage);
-            imageView.setImageBitmap(selectImage);
+            binding.imageView.setImageBitmap(selectImage);
 
         } else {
             int artId = DetailsFragmentArgs.fromBundle(getArguments()).getArtId();
-            button.setVisibility(View.INVISIBLE);
+            binding.button.setVisibility(View.INVISIBLE);
 
             try {
 
@@ -131,13 +128,13 @@ public class DetailsFragment extends Fragment {
 
                 while (cursor.moveToNext()) {
 
-                    artNameText.setText(cursor.getString(artNameIx));
-                    artistNameText.setText(cursor.getString(painterNameIx));
-                    artYearText.setText(cursor.getString(yearIx));
+                    binding.artNameText.setText(cursor.getString(artNameIx));
+                    binding.painterNameText.setText(cursor.getString(painterNameIx));
+                    binding.yearText.setText(cursor.getString(yearIx));
 
                     byte[] bytes = cursor.getBlob(imageIx);
                     Bitmap bitmap = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
-                    imageView.setImageBitmap(bitmap);
+                    binding.imageView.setImageBitmap(bitmap);
 
 
                 }
@@ -165,9 +162,9 @@ public class DetailsFragment extends Fragment {
 
     public void save(View view){
 
-        String artName = artNameText.getText().toString();
-        String painterName = artistNameText.getText().toString();
-        String year = artYearText.getText().toString();
+        String artName = binding.artNameText.getText().toString();
+        String painterName = binding.painterNameText.getText().toString();
+        String year = binding.yearText.getText().toString();
 
         Bitmap smallImage = makeSmallerImage(selectedImage,300);
 
@@ -218,11 +215,11 @@ public class DetailsFragment extends Fragment {
                                     if (Build.VERSION.SDK_INT >= 28) {
                                         ImageDecoder.Source source = ImageDecoder.createSource(requireActivity().getContentResolver(),imageData);
                                         selectedImage = ImageDecoder.decodeBitmap(source);
-                                        imageView.setImageBitmap(selectedImage);
+                                        binding.imageView.setImageBitmap(selectedImage);
 
                                     } else {
                                         selectedImage = MediaStore.Images.Media.getBitmap(requireActivity().getContentResolver(),imageData);
-                                        imageView.setImageBitmap(selectedImage);
+                                        binding.imageView.setImageBitmap(selectedImage);
                                     }
 
                                 } catch (IOException e) {
@@ -276,5 +273,9 @@ public class DetailsFragment extends Fragment {
 
         return Bitmap.createScaledBitmap(image,width,height,true);
     }
-
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+    }
 }

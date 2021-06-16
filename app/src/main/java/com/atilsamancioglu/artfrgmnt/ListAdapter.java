@@ -1,5 +1,6 @@
 package com.atilsamancioglu.artfrgmnt;
 
+import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,6 +9,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
+
+import com.atilsamancioglu.artfrgmnt.databinding.RecyclerRowBinding;
 
 import java.util.ArrayList;
 
@@ -21,18 +24,27 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ArtHolder> {
         this.idList = idList;
     }
 
+    class ArtHolder extends RecyclerView.ViewHolder {
+
+        private RecyclerRowBinding binding;
+
+        public ArtHolder(RecyclerRowBinding binding) {
+            super(binding.getRoot());
+            this.binding = binding;
+        }
+    }
+
+
     @NonNull
     @Override
     public ArtHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        LayoutInflater layoutInflater = LayoutInflater.from(parent.getContext());
-        View customView = layoutInflater.inflate(R.layout.recycler_row,parent,false);
-        return new ArtHolder(customView);
+        RecyclerRowBinding binding = RecyclerRowBinding.inflate(LayoutInflater.from(parent.getContext()),parent,false);
+        return new ArtHolder(binding);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ArtHolder holder, final int position) {
-        TextView rowTextView = holder.itemView.findViewById(R.id.rowTextView);
-        rowTextView.setText(artList.get(position));
+    public void onBindViewHolder(ListAdapter.ArtHolder holder, int position) {
+        holder.binding.rowTextView.setText(artList.get(position));
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -45,17 +57,11 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ArtHolder> {
         });
     }
 
+
     @Override
     public int getItemCount() {
         return artList.size();
     }
 
-    class ArtHolder extends RecyclerView.ViewHolder {
-
-        public ArtHolder(@NonNull View itemView) {
-            super(itemView);
-
-        }
-    }
 
 }

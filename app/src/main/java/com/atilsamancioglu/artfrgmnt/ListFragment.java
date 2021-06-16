@@ -18,6 +18,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.atilsamancioglu.artfrgmnt.databinding.FragmentListBinding;
+
 import java.util.ArrayList;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -26,6 +28,8 @@ public class ListFragment extends Fragment {
     ArrayList<String> nameArray;
     ArrayList<Integer> idArray;
     ListAdapter listAdapter;
+    private FragmentListBinding binding;
+
 
     public ListFragment() {
         // Required empty public constructor
@@ -44,21 +48,23 @@ public class ListFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_list, container, false);
+        binding = FragmentListBinding.inflate(inflater, container, false);
+        View view = binding.getRoot();
+        return view;
+
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        RecyclerView recyclerView = view.findViewById(R.id.recyclerView);
         nameArray = new ArrayList<String>();
         idArray = new ArrayList<Integer>();
 
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getContext());
-        recyclerView.setLayoutManager(layoutManager);
+        binding.recyclerView.setLayoutManager(layoutManager);
         listAdapter = new ListAdapter(nameArray,idArray);
-        recyclerView.setAdapter(listAdapter);
+        binding.recyclerView.setAdapter(listAdapter);
         getData();
 
     }
@@ -86,5 +92,11 @@ public class ListFragment extends Fragment {
         }
 
 
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }
