@@ -37,6 +37,7 @@ import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.atilsamancioglu.artfrgmnt.databinding.FragmentDetailsBinding;
+import com.google.android.material.snackbar.Snackbar;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -61,8 +62,7 @@ public class DetailsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         registerLauncher();
-        if (getArguments() != null) {
-        }
+
     }
 
     @Override
@@ -142,19 +142,25 @@ public class DetailsFragment extends Fragment {
                 cursor.close();
 
             } catch (Exception e) {
-
+                e.printStackTrace();
             }
 
-
         }
-
 
     }
 
     public void selectImage(View view){
         if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-            permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
-        } else {
+            if(ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                Snackbar.make(view,"Permission needed for gallery", Snackbar.LENGTH_INDEFINITE).setAction("Give Permission", new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+                    }
+                }).show();
+            } else {
+                permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+            }        } else {
             Intent intentToGallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             activityResultLauncher.launch(intentToGallery);
         }
