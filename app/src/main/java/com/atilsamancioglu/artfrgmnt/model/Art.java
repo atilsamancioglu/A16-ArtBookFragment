@@ -1,6 +1,4 @@
-package com.atilsamancioglu.artfrgmnt;
-
-import android.graphics.Bitmap;
+package com.atilsamancioglu.artfrgmnt.model;
 
 import androidx.annotation.Nullable;
 import androidx.room.ColumnInfo;

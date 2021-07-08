@@ -1,13 +1,10 @@
-package com.atilsamancioglu.artfrgmnt;
+package com.atilsamancioglu.artfrgmnt.view;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.ImageDecoder;
@@ -32,12 +29,13 @@ import android.provider.MediaStore;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Toast;
 
+import com.atilsamancioglu.artfrgmnt.R;
 import com.atilsamancioglu.artfrgmnt.databinding.FragmentDetailsBinding;
+import com.atilsamancioglu.artfrgmnt.model.Art;
+import com.atilsamancioglu.artfrgmnt.roomdb.ArtDao;
+import com.atilsamancioglu.artfrgmnt.roomdb.ArtDatabase;
 import com.google.android.material.snackbar.Snackbar;
 
 import java.io.ByteArrayOutputStream;

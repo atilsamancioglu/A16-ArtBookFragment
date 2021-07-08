@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/listFragment"
-        android:name="com.atilsamancioglu.artfrgmnt.ListFragment"
+        android:name="com.atilsamancioglu.artfrgmnt.view.ListFragment"
         android:label="fragment_list"
         tools:layout="@layout/fragment_list" >
         <action
@@ -16,7 +16,7 @@
     </fragment>
     <fragment
         android:id="@+id/detailsFragment"
-        android:name="com.atilsamancioglu.artfrgmnt.DetailsFragment"
+        android:name="com.atilsamancioglu.artfrgmnt.view.DetailsFragment"
         android:label="fragment_details"
         tools:layout="@layout/fragment_details" >
         <action

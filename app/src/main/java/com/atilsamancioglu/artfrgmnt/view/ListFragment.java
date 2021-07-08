@@ -1,13 +1,10 @@
-package com.atilsamancioglu.artfrgmnt;
+package com.atilsamancioglu.artfrgmnt.view;
 
-import android.database.Cursor;
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.room.Room;
@@ -15,20 +12,18 @@ import androidx.room.Room;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
 
+import com.atilsamancioglu.artfrgmnt.adapter.ListAdapter;
 import com.atilsamancioglu.artfrgmnt.databinding.FragmentListBinding;
+import com.atilsamancioglu.artfrgmnt.model.Art;
+import com.atilsamancioglu.artfrgmnt.roomdb.ArtDao;
+import com.atilsamancioglu.artfrgmnt.roomdb.ArtDatabase;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
 import io.reactivex.rxjava3.disposables.CompositeDisposable;
 import io.reactivex.rxjava3.schedulers.Schedulers;
-
-import static android.content.Context.MODE_PRIVATE;
 
 public class ListFragment extends Fragment {
     ListAdapter listAdapter;

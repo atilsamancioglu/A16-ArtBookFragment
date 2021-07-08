@@ -1,18 +1,17 @@
-package com.atilsamancioglu.artfrgmnt;
+package com.atilsamancioglu.artfrgmnt.adapter;
 
-import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.atilsamancioglu.artfrgmnt.databinding.RecyclerRowBinding;
+import com.atilsamancioglu.artfrgmnt.model.Art;
+import com.atilsamancioglu.artfrgmnt.view.ListFragmentDirections;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ArtHolder> {
