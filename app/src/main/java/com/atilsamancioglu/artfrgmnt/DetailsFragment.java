@@ -26,6 +26,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavDirections;
 import androidx.navigation.Navigation;
+import androidx.room.Room;
 
 import android.provider.MediaStore;
 import android.view.LayoutInflater;
@@ -42,6 +43,10 @@ import com.google.android.material.snackbar.Snackbar;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+import io.reactivex.rxjava3.android.schedulers.AndroidSchedulers;
+import io.reactivex.rxjava3.disposables.CompositeDisposable;
+import io.reactivex.rxjava3.schedulers.Schedulers;
+
 import static android.content.Context.MODE_PRIVATE;
 
 public class DetailsFragment extends Fragment {
@@ -52,6 +57,10 @@ public class DetailsFragment extends Fragment {
     ActivityResultLauncher<Intent> activityResultLauncher;
     ActivityResultLauncher<String> permissionLauncher;
     private FragmentDetailsBinding binding;
+    private final CompositeDisposable mDisposable = new CompositeDisposable();
+    ArtDatabase artDatabase;
+    ArtDao artDao;
+    Art artFromMain;
 
 
     public DetailsFragment() {
@@ -62,6 +71,12 @@ public class DetailsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         registerLauncher();
+
+        artDatabase = Room.databaseBuilder(requireContext(),
+                ArtDatabase.class, "Arts")
+                .build();
+
+        artDao = artDatabase.artDao();
 
     }
 
@@ -89,7 +104,7 @@ public class DetailsFragment extends Fragment {
         }
 
 
-        binding.button.setOnClickListener(new View.OnClickListener() {
+        binding.saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 save(view);
@@ -103,50 +118,44 @@ public class DetailsFragment extends Fragment {
             }
         });
 
+        binding.deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                delete(v);
+            }
+        });
 
-        if (info.matches("new")) {
+
+        if (info.equals("new")) {
             binding.artNameText.setText("");
             binding.painterNameText.setText("");
             binding.yearText.setText("");
-            binding.button.setVisibility(View.VISIBLE);
+            binding.saveButton.setVisibility(View.VISIBLE);
+            binding.deleteButton.setVisibility(View.GONE);
 
-            Bitmap selectImage = BitmapFactory.decodeResource(getContext().getResources(),R.drawable.selectimage);
-            binding.imageView.setImageBitmap(selectImage);
+            binding.imageView.setImageResource(R.drawable.selectimage);
 
         } else {
             int artId = DetailsFragmentArgs.fromBundle(getArguments()).getArtId();
-            binding.button.setVisibility(View.INVISIBLE);
+            binding.saveButton.setVisibility(View.GONE);
+            binding.deleteButton.setVisibility(View.VISIBLE);
 
-            try {
-
-                Cursor cursor = database.rawQuery("SELECT * FROM arts WHERE id = ?",new String[] {String.valueOf(artId)});
-
-                int artNameIx = cursor.getColumnIndex("artname");
-                int painterNameIx = cursor.getColumnIndex("paintername");
-                int yearIx = cursor.getColumnIndex("year");
-                int imageIx = cursor.getColumnIndex("image");
-
-                while (cursor.moveToNext()) {
-
-                    binding.artNameText.setText(cursor.getString(artNameIx));
-                    binding.painterNameText.setText(cursor.getString(painterNameIx));
-                    binding.yearText.setText(cursor.getString(yearIx));
-
-                    byte[] bytes = cursor.getBlob(imageIx);
-                    Bitmap bitmap = BitmapFactory.decodeByteArray(bytes,0,bytes.length);
-                    binding.imageView.setImageBitmap(bitmap);
-
-
-                }
-
-                cursor.close();
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
+            mDisposable.add(artDao.getArtById(artId)
+                    .subscribeOn(Schedulers.io())
+                    .observeOn(AndroidSchedulers.mainThread())
+                    .subscribe(DetailsFragment.this::handleResponseWithOldArt));
         }
 
+    }
+
+    private void handleResponseWithOldArt(Art art) {
+        artFromMain = art;
+        binding.artNameText.setText(art.artname);
+        binding.painterNameText.setText(art.artistName);
+        binding.yearText.setText(art.year);
+
+        Bitmap bitmap = BitmapFactory.decodeByteArray(art.image,0,art.image.length);
+        binding.imageView.setImageBitmap(bitmap);
     }
 
     public void selectImage(View view){
@@ -178,32 +187,25 @@ public class DetailsFragment extends Fragment {
         smallImage.compress(Bitmap.CompressFormat.PNG,50,outputStream);
         byte[] byteArray = outputStream.toByteArray();
 
-        try {
+        Art art = new Art(artName,painterName,year,byteArray);
 
-            database = requireActivity().openOrCreateDatabase("Arts",MODE_PRIVATE,null);
-            database.execSQL("CREATE TABLE IF NOT EXISTS arts (id INTEGER PRIMARY KEY,artname VARCHAR, paintername VARCHAR, year VARCHAR, image BLOB)");
+        mDisposable.add(artDao.insert(art)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(DetailsFragment.this::handleResponse));
 
+    }
 
-            String sqlString = "INSERT INTO arts (artname, paintername, year, image) VALUES (?, ?, ?, ?)";
-            SQLiteStatement sqLiteStatement = database.compileStatement(sqlString);
-            sqLiteStatement.bindString(1,artName);
-            sqLiteStatement.bindString(2,painterName);
-            sqLiteStatement.bindString(3,year);
-            sqLiteStatement.bindBlob(4,byteArray);
-            sqLiteStatement.execute();
+    public void delete(View view) {
+        mDisposable.add(artDao.delete(artFromMain)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(DetailsFragment.this::handleResponse));
+    }
 
-
-        } catch (Exception e) {
-
-        }
-
-
-        //Action
-
+    private void handleResponse() {
         NavDirections action = DetailsFragmentDirections.actionDetailsFragmentToListFragment();
-        Navigation.findNavController(view).navigate(action);
-
-
+        Navigation.findNavController(requireView()).navigate(action);
     }
 
     public void registerLauncher() {
@@ -236,10 +238,6 @@ public class DetailsFragment extends Fragment {
                         }
                     }
                 });
-
-
-
-
 
         permissionLauncher =
                 registerForActivityResult(new ActivityResultContracts.RequestPermission(), new ActivityResultCallback<Boolean>() {
@@ -283,5 +281,6 @@ public class DetailsFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+        mDisposable.clear();
     }
 }

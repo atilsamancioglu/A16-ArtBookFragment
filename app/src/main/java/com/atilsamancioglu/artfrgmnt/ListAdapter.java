@@ -13,15 +13,14 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.atilsamancioglu.artfrgmnt.databinding.RecyclerRowBinding;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ArtHolder> {
 
-    ArrayList<String> artList;
-    ArrayList<Integer> idList;
+    List<Art> artList;
 
-    public ListAdapter(ArrayList<String> artList, ArrayList<Integer> idList) {
+    public ListAdapter(List<Art> artList) {
         this.artList = artList;
-        this.idList = idList;
     }
 
     class ArtHolder extends RecyclerView.ViewHolder {
@@ -44,12 +43,12 @@ public class ListAdapter extends RecyclerView.Adapter<ListAdapter.ArtHolder> {
 
     @Override
     public void onBindViewHolder(ListAdapter.ArtHolder holder, int position) {
-        holder.binding.rowTextView.setText(artList.get(position));
+        holder.binding.rowTextView.setText(artList.get(position).artname);
         holder.itemView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 ListFragmentDirections.ActionListFragmentToDetailsFragment action = ListFragmentDirections.actionListFragmentToDetailsFragment("old");
-                action.setArtId(idList.get(position));
+                action.setArtId(artList.get(position).id);
                 action.setInfo("old");
                 Navigation.findNavController(view).navigate(action);
 
