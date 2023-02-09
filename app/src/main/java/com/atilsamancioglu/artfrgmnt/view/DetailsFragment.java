@@ -157,20 +157,39 @@ public class DetailsFragment extends Fragment {
     }
 
     public void selectImage(View view){
-        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
-            if(ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),Manifest.permission.READ_EXTERNAL_STORAGE)) {
-                Snackbar.make(view,"Permission needed for gallery", Snackbar.LENGTH_INDEFINITE).setAction("Give Permission", new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
-                    }
-                }).show();
-            } else {
-                permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
-            }        } else {
-            Intent intentToGallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            activityResultLauncher.launch(intentToGallery);
+
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_MEDIA_IMAGES) != PackageManager.PERMISSION_GRANTED){
+                if(ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),Manifest.permission.READ_MEDIA_IMAGES)) {
+                    Snackbar.make(view,"Permission needed for gallery", Snackbar.LENGTH_INDEFINITE).setAction("Give Permission", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            permissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES);
+                        }
+                    }).show();
+                } else {
+                    permissionLauncher.launch(Manifest.permission.READ_MEDIA_IMAGES);
+                }        } else {
+                Intent intentToGallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                activityResultLauncher.launch(intentToGallery);
+            }
+        } else {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+                if(ActivityCompat.shouldShowRequestPermissionRationale(requireActivity(),Manifest.permission.READ_EXTERNAL_STORAGE)) {
+                    Snackbar.make(view,"Permission needed for gallery", Snackbar.LENGTH_INDEFINITE).setAction("Give Permission", new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+                        }
+                    }).show();
+                } else {
+                    permissionLauncher.launch(Manifest.permission.READ_EXTERNAL_STORAGE);
+                }        } else {
+                Intent intentToGallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+                activityResultLauncher.launch(intentToGallery);
+            }
         }
+
     }
 
     public void save(View view){
